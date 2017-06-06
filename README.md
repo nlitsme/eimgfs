@@ -83,11 +83,13 @@ This will alter `therom.nb`, increasing its maximum size to 256Mbyte, deleting f
 for the names found in the respective `delfiles-...` directories, and adding files from the `files-...` directories.
 
 
-building
+Building
 ========
 
 I added a makefile for OSX. Since i don't have a windows development machine at hand, i am not providing
 a windows build currently.
+
+Make sure the dlls from the `dlls` directory are somewhere in the search path. They are needed for decompression.
 
 
 author
