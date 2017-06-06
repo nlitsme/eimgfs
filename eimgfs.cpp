@@ -13,9 +13,9 @@
 #include <sys/time.h>
 #endif
 
-#include <err/posix.h>
-#include <stringutils.h>
-#include <filefunctions.h>
+#include "err/posix.h"
+#include "stringutils.h"
+#include "FileFunctions.h"
 #include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/pointer_cast.hpp>
