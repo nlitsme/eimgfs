@@ -1,3 +1,12 @@
+/*
+ * dllloader: library for loading windows dlls on MacOS
+ *
+ * Note: Since the windows dll's we are loading contain 32-bit code,
+ * The entire application needs to be 32-bit.
+ * This means you have to compile with -m32.
+ *
+ */
+
 // todo: research how to use 32bit windows dll's from 64bit macosx
 
 // tool which exports 3 functions:
