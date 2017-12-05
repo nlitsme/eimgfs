@@ -1,0 +1,41 @@
+MYPRJ=.
+
+
+LDFLAGS=/Zi
+CFLAGS=/Zi -Wall -D_NO_RAPI /EHsc /D_WIN32_WINNT_WIN10_TH2=1 -DNOMINMAX -D_NO_WINDOWS
+boost=c:/local/boost
+CFLAGS+=-I $(boost)
+# vs2015: 14.0
+# vs2017: 14.1
+LDFLAGS=-debug -libpath:$(boost)/lib32-msvc-14.0
+
+itslib=$(MYPRJ)/itslib
+CFLAGS+=-I $(itslib)/include
+
+dllload=$(MYPRJ)/dllloader
+CFLAGS+=-I $(dllload)
+
+openssl=c:/local/openssl
+CFLAGS+=-I $(openssl)/include
+LDFLAGS+=$(openssl)/lib/libeay32.lib
+
+computil=$(MYPRJ)/CompressUtils
+CFLAGS+=-I $(computil)
+
+CXX=CL.exe
+LINK=LINK.exe
+
+eimgfs.exe: eimgfs.obj stringutils.obj debug.obj dllloader.obj
+	$(LINK) /out:$@ $^ $(LDFLAGS)
+
+%.obj: %.cpp
+	$(CXX) -c /Fo:$@ $^ $(CFLAGS)
+
+%.obj: $(itslib)/src/%.cpp
+	$(CXX) -c /Fo:$@ $^ $(CFLAGS)
+
+%.obj: $(dllload)/%.cpp
+	$(CXX) -c /Fo:$@ $^ $(CFLAGS)
+
+clean:
+	$(RM) eimgfs $(wildcard *.obj)
