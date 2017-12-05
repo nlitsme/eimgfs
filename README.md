@@ -19,6 +19,14 @@ To be able to compress/decompress files it must either run on windows, or as a 3
 
 This used to be part of the itsutils distribution.
 
+History
+=======
+
+I started developing this tool as `dumprom` in 2003 for xda-developers.
+Later converted to perl. And Later again, when WindowsCE started
+using the `imgfs` filesystem, converted to c++, now named `eimgfs`. Which stads for 'Edit imgfs'.
+
+Several older tools with similar functionality: `dumpxip.pl`, `makexip.pl`, `editimgfs.pl`.
 
 Usage
 =====
@@ -86,8 +94,8 @@ for the names found in the respective `delfiles-...` directories, and adding fil
 Building
 ========
 
-I added a makefile for OSX. Since i don't have a windows development machine at hand, i am not providing
-a windows build currently.
+There are makefiles for OSX and Windows.
+Both depend on the presence of 32 bit libraries for boost and openssl.
 
 Make sure the dlls from the `dlls` directory are somewhere in the search path. They are needed for decompression.
 
