@@ -7,6 +7,7 @@
 //#include <util/wintypes.h>
 #include <stdint.h>
 #include <string>
+#include <vector>
 //#include "vectorutils.h"
 
 #ifdef __cplusplus
