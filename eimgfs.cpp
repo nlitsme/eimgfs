@@ -19,7 +19,6 @@
 #include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/pointer_cast.hpp>
-#include <boost/lexical_cast.hpp>
 
 #ifndef _NO_COMPRESS
 #include "lzxxpr_convert.h"
@@ -469,8 +468,7 @@ public:
 
         if (i==_blockmap.end()) {
             printf("map=%d, off=%08llx\n", (int)_blockmap.size(), off);
-            dumpblocks();
-            throw "b000ff map empty";
+            throw "b000ff before start of map";
         }
 
         if (off >= i->second.endblkofs()) {
@@ -478,7 +476,6 @@ public:
 
             if (i==_blockmap.end()) {
                 printf("map=%d, off=%08llx\n", (int)_blockmap.size(), off);
-                dumpblocks();
                 throw "beyond end of map";
             }
         }
@@ -4809,7 +4806,7 @@ public:
         }
         uint32_t hdrrva= r->read32le();
         uint32_t hdrofs= r->read32le();
-        if (rvabase==0 && hdrofs==0) {
+        if (hdrrva==0 && hdrofs==0) {
             if (g_verbose > 1)
                 printf("not xip: hdrofs=0x%x\n", hdrofs);
             return false;
@@ -5927,8 +5924,8 @@ int main(int argc, char**argv)
         // check for fs or rd presence
         if (arg=="-chexdump" || arg=="-hexdump" || arg=="-hexedit" || arg=="-getbytes" || arg=="-putbytes" || arg=="-saveas") {
             if (readername.empty()) {
-                printf("option %s must be preceeded by -rd RDNAME\n", arg.c_str());
-                break;
+                readername= "file";
+                printf("defaulting to 'file' for option %s, override with the -rd option\n");
             }
         }
         else if (arg=="-add" || arg=="-ren" || arg=="-del" || arg=="-dump" || arg=="-extract" || arg=="-dirhexdump") {
@@ -5949,12 +5946,12 @@ int main(int argc, char**argv)
         }
         else if (arg=="-R") {
             if (i>=argc) throw "missing arg for -R";
-            xip_rvabase= boost::lexical_cast<uint64_t>(argv[i++]);
+            xip_rvabase= _strtoi64(argv[i++], 0, 0);
             exe_reconstructor::e32rom::g_wm2003= true;
         }
         else if (arg=="-s") {
             if (i>=argc) throw "missing arg for -s";
-            totalsize= boost::lexical_cast<uint64_t>(argv[i++]);
+            totalsize= _strtoi64(argv[i++], 0, 0);
         }
         else if (arg=="-info") {
             actions.push_back(action_ptr(new print_info()));
