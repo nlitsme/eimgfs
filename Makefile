@@ -3,6 +3,7 @@ MYPRJ=.
 
 LDFLAGS=-g -m32
 CFLAGS=-g -m32 -Wall -std=c++1z -D_NO_RAPI
+CFLAGS+=$(if $(D),-O0,-O3)
 
 itslib=$(MYPRJ)/itslib
 CFLAGS+=-I $(itslib)/include
