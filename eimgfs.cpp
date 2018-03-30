@@ -5644,6 +5644,7 @@ void usage()
     fprintf(stderr, "Usage: editimgfs imgfile [operations]\n");
     fprintf(stderr, "      -v                          : verbose\n");
     fprintf(stderr, "      -r                          : readonly\n");
+    fprintf(stderr, "      -o OFFSET -l LENGTH         : look only at a section of the imgfile.\n");
     fprintf(stderr, "      -d path                     : where to save extrated files to\n");
     fprintf(stderr, "      -s SIZE                     : specify totalsize ( for motorola FLASH )\n");
     fprintf(stderr, "      -extractall                 : extract all to '-d' path\n");
@@ -5905,6 +5906,8 @@ int main(int argc, char**argv)
     std::string keyfile;
     bool resignnbh= false;
     uint64_t totalsize= 0;
+    uint64_t imgoffset= 0;
+    uint64_t imglength= 0;
 
     filetypefilter_ptr extractfilter;
 
@@ -5952,6 +5955,14 @@ int main(int argc, char**argv)
         else if (arg=="-s") {
             if (i>=argc) throw "missing arg for -s";
             totalsize= _strtoi64(argv[i++], 0, 0);
+        }
+        else if (arg=="-o") {
+            if (i>=argc) throw "missing arg for -o";
+            imgoffset = _strtoi64(argv[i++], 0, 0);
+        }
+        else if (arg=="-l") {
+            if (i>=argc) throw "missing arg for -l";
+            imglength = _strtoi64(argv[i++], 0, 0);
         }
         else if (arg=="-info") {
             actions.push_back(action_ptr(new print_info()));
@@ -6160,6 +6171,11 @@ int main(int argc, char**argv)
 #endif
 
     rdlist.addreader(rd, "file");
+    if (imgoffset) {
+        if (imglength==0)
+            imglength = rd->size() - imgoffset;
+        rd = ReadWriter_ptr(new OffsetReader(rd, imgoffset, imglength));
+    }
 
     ByteVector sec0(512);
     rd->setpos(0);
