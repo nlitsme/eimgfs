@@ -41,14 +41,16 @@ public:
             //          i      ie
             //                 ofs...end
             if (next!=_m.end() && end > next->first)
-                throw "overlap";
+                printf("overlap: mark(%08x-%08x) / i=%08x-%08x, n=%08x-%08x\n", ofs, end, i->first, endofs(i), next->first, endofs(next));
+                //throw "overlap";
             i->second += size;
         }
         else if (endofs(i) > ofs) {
             //  --------<.......>----------<....>
             //          i      ie
             //               ofs...end
-            throw "overlap";
+            printf("overlap: mark(%08x-%08x) / i=%08x-%08x, n=%08x-%08x\n", ofs, end, i->first, endofs(i), next->first, endofs(next));
+            //throw "overlap";
         }
         else {
             //  --------<.......>----------<....>
@@ -60,7 +62,7 @@ public:
                 //                    ofs........end
                 
                 printf("overlap: mark(%08x-%08x) / i=%08x-%08x, n=%08x-%08x\n", ofs, end, i->first, endofs(i), next->first, endofs(next));
-                throw "overlap";
+                //throw "overlap";
             }
             auto ins= _m.insert(allocmap_t::value_type(ofs, size));
             if (!ins.second)
@@ -79,7 +81,8 @@ public:
             _m.erase(next);
         }
         else if (endofs(i) > next->first) {
-            throw "overlap";
+            printf("overlap: mark(%08x-%08x) / i=%08x-%08x, n=%08x-%08x\n", ofs, end, i->first, endofs(i), next->first, endofs(next));
+            //throw "overlap";
         }
     }
     void markfree(uint32_t ofs, uint32_t size)
