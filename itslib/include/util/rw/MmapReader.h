@@ -9,7 +9,11 @@
 #endif
 
 #ifndef _WIN32
+#ifdef __linux__
+#include <linux/fs.h>
+#else
 #include <sys/disk.h>
+#endif
 #include <sys/ioctl.h>
 #endif
 

@@ -53,7 +53,7 @@ typedef uint32_t off_t;
 
 #define logmsg(...)
 
-#ifdef __MACH__
+#if defined(__MACH__) || defined(__linux__)
 #include <sys/mman.h>
 #endif
 
@@ -618,8 +618,8 @@ public:
         {
            // fprintf(stderr,"reloc %d: %08lx %d\n", i, _pe.relocitem(i).virtualaddress, _pe.relocitem(i).type);
         }
-#ifdef __MACH__ 
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+#if defined(__MACH__) || defined(__linux__)
+#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7) || defined(__linux__)
 
 #define PAGE_MASK 0xFFF
         // make executable
