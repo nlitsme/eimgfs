@@ -99,6 +99,7 @@ Both depend on the presence of 32 bit libraries for boost and openssl.
 
 Make sure the dlls from the `dlls` directory are somewhere in the search path. They are needed for decompression.
 
+You can build `eimgfs` with OSX SDK up to version 10.13, version 10.14 no longer includes the 32 bit libraries needed.
 
 author
 ======
