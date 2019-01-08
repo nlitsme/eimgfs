@@ -721,7 +721,7 @@ class FFFBFFFDReader : public ReadWriter {
     void dumpareas()
     {
         printf("by fileofs\n");
-        std::for_each(_filemap.begin(), _filemap.end(), [this](const filemap_t::value_type& vt) {
+        std::for_each(_filemap.begin(), _filemap.end(), [](const filemap_t::value_type& vt) {
             const areainfo& bi= vt.second;
             printf("%08llx: ", vt.first);
             if (hasblocknr(bi.firstblock, bi.tag)) {
@@ -1967,7 +1967,7 @@ private:
             else {
                 rva= rom->realaddr - e32->vbase;
             }
-            psize= roundsize(rom->psize, e32->filealign);
+            psize= roundsize(rom->vsize, e32->filealign);       // note: ignoring rom psize, this is the compressed size.
             dataptr= 0;         // set later
             realaddr= 0;
             access= 0;
@@ -4318,6 +4318,7 @@ class XipFile : public FileContainer {
                     ByteVector fulldata(_exe->o32fullsize(i));
                     xip.getrvareader(_exe->o32datarva(i), compdata.size())->read(&compdata[0], compdata.size());
                     XipFile::decompress(&compdata[0], compdata.size(), &fulldata[0], fulldata.size());
+
                     _exe->add_sectioninfo(stringformat("S%03d", i),
                             fulldata.size(),
                             ReadWriter_ptr(new ByteVectorReader(fulldata)));
@@ -4842,6 +4843,10 @@ public:
 #ifndef _NO_COMPRESS
         if (compsize<fullsize) {
             _rom34.DoCompressConvert(ITSCOMP_ROM4_DECODE, data, fullsize, compdata, compsize);
+            if (g_verbose>2) {
+                printf("indata: %s\n", hexdump(compdata, compsize).c_str());
+                printf("outdat: %s\n", hexdump(data, fullsize).c_str());
+            }
         }
         else
 #endif
@@ -5115,6 +5120,10 @@ private:
 #ifndef _NO_COMPRESS
         if (compsize<fullsize) {
             _xpr.DoCompressConvert(ITSCOMP_XPR_DECODE, data, fullsize, compdata, compsize);
+            if (g_verbose>2) {
+                printf("indata: %s\n", hexdump(compdata, compsize).c_str());
+                printf("outdat: %s\n", hexdump(data, fullsize).c_str());
+            }
         }
         else
 #endif
@@ -5928,7 +5937,7 @@ int main(int argc, char**argv)
         if (arg=="-chexdump" || arg=="-hexdump" || arg=="-hexedit" || arg=="-getbytes" || arg=="-putbytes" || arg=="-saveas") {
             if (readername.empty()) {
                 readername= "file";
-                printf("defaulting to 'file' for option %s, override with the -rd option\n");
+                printf("defaulting to 'file' for option %s, override with the -rd option\n", arg.c_str());
             }
         }
         else if (arg=="-add" || arg=="-ren" || arg=="-del" || arg=="-dump" || arg=="-extract" || arg=="-dirhexdump") {
@@ -5943,6 +5952,7 @@ int main(int argc, char**argv)
             if (imgname.empty())
                 imgname= arg;
             else {
+                printf("Can have only one image name\n");
                 usage();
                 return 1;
             }
@@ -6144,12 +6154,14 @@ int main(int argc, char**argv)
                 actions.push_back(action_ptr(new putto_reader(readername, offset, size, inname)));
         }
         else {
+            printf("unknown option: %s\n", arg.c_str());
             usage();
             return 1;
         }
     }
 
     if (imgname.empty()) {
+        printf("Missing image name\n");
         usage();
         return 1;
     }
