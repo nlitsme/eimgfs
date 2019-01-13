@@ -7,7 +7,7 @@ boost=c:/local/boost
 CFLAGS+=-I $(boost)
 # vs2015: 14.0
 # vs2017: 14.1
-LDFLAGS=/libpath:$(boost)/lib32-msvc-14.0 /link /machine:x86
+LDFLAGS=/link /libpath:$(boost)/lib32-msvc-14.0 /machine:x86
 
 itslib=$(MYPRJ)/itslib
 CFLAGS+=-I $(itslib)/include
