@@ -11,16 +11,26 @@
 #ifndef _WIN32
 #include <sys/time.h>
 #endif
-#ifndef _WIN32
-#ifdef __linux__
-#include <linux/fs.h>
-#else
+
+#ifdef __MACH__
 #include <sys/disk.h>
 #endif
+#ifdef __linux__
+#include <linux/fs.h>
+#endif
+#ifndef _WIN32
 #include <sys/ioctl.h>
+#include <unistd.h>     // ftruncate
 #endif
 
 #include "util/ReadWriter.h"
+#ifdef _WIN32
+#define	S_ISBLK(m)	(((m) & S_IFMT) == S_IFBLK)	/* block special */
+#define	S_ISDIR(m)	(((m) & S_IFMT) == S_IFDIR)	/* directory */
+#define	S_ISREG(m)	(((m) & S_IFMT) == S_IFREG)	/* regular file */
+#endif
+
+
 
 class FileReader : public ReadWriter {
     FILE *_f;
@@ -154,6 +164,8 @@ public:
         if (-1==_chsize_s(fileno(_f), off))
             throw posixerror(std::string("truncating ")+_filename);
 #else
+        if (!isreadonly())
+            flush();
         if (-1==ftruncate(fileno(_f), off)) {
             printf("err=%d\n", errno);
             throw posixerror(std::string("truncating ")+_filename);
@@ -170,6 +182,13 @@ public:
     {
 #ifdef _WIN32_WCE
         throw "file::size not supported under wince";
+        flush();
+
+        DWORD fsHigh;
+        DWORD fsLow= GetFileSize(fileno(_f), &fsHigh);
+        if (fsLow==0xFFFFFFFF && GetLastError())
+            throw win32error("GetFileSize");
+        return (uint64_t(fsHigh)<<32) | fsLow;
 #else
         // if we don't fflush, there may be unwritten bytes in the file buffer
         // which are not counted in the size yet
@@ -180,12 +199,14 @@ public:
         struct stat data;
         if (-1==fstat(h, &data))
             throw posixerror("fstat");
-        if (data.st_mode&S_IFREG) {
+        if (S_ISREG(data.st_mode)) {
             return data.st_size;
         }
 #if !defined(_WIN32) && !defined(__FreeBSD__)
-        else if (data.st_mode&S_IFBLK) {
-#ifdef __MACH__
+        else if (S_ISBLK(data.st_mode)) {
+#if TARGET_OS_IPHONE
+            throw "block devices not supported on IOS";
+#elif defined(__MACH__)
             uint64_t bkcount;
             uint32_t bksize;
             if (-1==ioctl(h, DKIOCGETBLOCKCOUNT, &bkcount))
@@ -208,7 +229,9 @@ public:
     }
     virtual uint64_t getpos() const
     {
-#ifdef _WIN32
+#ifdef _WIN32_WCE
+        return ftell(_f);
+#elif defined(_WIN32)
         return _ftelli64(_f);
 #else
         return ftello(_f);
@@ -244,6 +267,8 @@ public:
         times.modtime= t;
         if (-1==_futime(fileno(_f),&times))
             throw posixerror(std::string("f setting file time: ")+_filename);
+#elif defined(__ANDROID__)
+        throw "file::setunixtime not supported on android";
 #else
         timeval times[2];
         times[0].tv_sec = times[1].tv_sec = t;
@@ -252,33 +277,35 @@ public:
             throw posixerror(std::string("f setting file time: ")+_filename);
 #endif
     }
+//#ifndef _WIN32_WCE
+#if !defined(_WIN32_WCE) && !defined(WINDOWS_UAP)
     static bool isfile(const std::string& fname)
     {
         struct stat st;
         if (-1==stat(fname.c_str(), &st))
             throw posixerror(std::string("statting ")+fname);
-        return st.st_mode&S_IFREG;
+        return S_ISREG(st.st_mode);
     }
     static bool isdir(const std::string& fname)
     {
         struct stat st;
         if (-1==stat(fname.c_str(), &st))
             throw posixerror(std::string("statting ")+fname);
-        return st.st_mode&S_IFDIR;
+        return S_ISDIR(st.st_mode);
     }
+#endif
     static bool isblockdev(const std::string& fname)
     {
 #ifndef _WIN32
         struct stat st;
         if (-1==stat(fname.c_str(), &st))
             throw posixerror(std::string("statting ")+fname);
-        return st.st_mode&S_IFBLK;
+        return S_ISBLK(st.st_mode);
 #else
         return false;
 #endif
     }
 };
-typedef boost::shared_ptr<FileReader> FileReader_ptr;
 #ifdef _MSC_VER
 // msvc requires explicit allocation
 const FileReader::opencreate_t    FileReader::opencreate;

@@ -1,6 +1,5 @@
 #ifndef __UTIL_RW_MEMORYREADER_H_
 #define __UTIL_RW_MEMORYREADER_H_
-#include <boost/shared_ptr.hpp>
 #include "util/ReadWriter.h"
 class MemoryReader : public ReadWriter {
     bool _growable;
@@ -131,5 +130,4 @@ public:
     const uint8_t*ccur() { return _mem+_curpos; }
     const uint8_t*cend() { return _mem+size(); }
 };
-typedef boost::shared_ptr<MemoryReader> MemoryReader_ptr;
 #endif

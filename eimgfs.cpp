@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <functional>
 #include <algorithm>  // max_element
 #include <numeric>    // accumulate
 #include <sys/stat.h>
@@ -16,18 +17,12 @@
 #include "err/posix.h"
 #include "stringutils.h"
 #include "FileFunctions.h"
-#include <boost/function.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/pointer_cast.hpp>
+#include <memory>
 
 #ifndef _NO_COMPRESS
 #include "lzxxpr_convert.h"
 #include "win32compress_link.h"
 #include "rom34_convert.h"
-#endif
-#ifndef _NO_MMAP
-#include <boost/interprocess/mapped_region.hpp>
-#include <boost/interprocess/file_mapping.hpp>
 #endif
 #ifdef _WIN32
 #include <io.h>
@@ -659,7 +654,7 @@ public:
         for (int i=0 ; i<4 ; i++)
             _table[i].printentry();
     }
-    void partition_enumerator(boost::function<void(uint8_t,uint64_t,uint64_t)> fn)
+    void partition_enumerator(std::function<void(uint8_t,uint64_t,uint64_t)> fn)
     {
         for (int i=0 ; i<4 ; i++)
             if (_table[i].type() || _table[i].size())
@@ -1576,7 +1571,7 @@ class exe_reconstructor {
             }
         }
     };
-    typedef boost::shared_ptr<sectioninfo> sectioninfo_ptr;
+    typedef std::shared_ptr<sectioninfo> sectioninfo_ptr;
 public:
     enum infotype_t { EXP, IMP, RES, EXC, SEC, FIX, DEB, IMD, MSP, TLS, CFG, BND, IAT, DMP, COM, RS5 };
                       
@@ -1681,7 +1676,7 @@ public:
             set16le(p, subsys);              // 0x6C
         }
     };
-    typedef boost::shared_ptr<e32rom> e32rom_ptr;
+    typedef std::shared_ptr<e32rom> e32rom_ptr;
     struct o32rom {
         uint32_t vsize;
         uint32_t rva;
@@ -1722,7 +1717,7 @@ public:
             set32le(p+0x14, flags);
         }
     };
-    typedef boost::shared_ptr<o32rom> o32rom_ptr;
+    typedef std::shared_ptr<o32rom> o32rom_ptr;
 private:
     struct e32exe {
         uint32_t magic;        // 0000  Magic number E32_MAGIC
@@ -1923,7 +1918,7 @@ private:
             }
         }
     };
-    typedef boost::shared_ptr<e32exe> e32exe_ptr;
+    typedef std::shared_ptr<e32exe> e32exe_ptr;
     struct o32exe {
         std::string name;    // 0000 Object name
         uint32_t vsize;      // 0008  Virtual memory size
@@ -1997,7 +1992,7 @@ private:
 
         static size_t size() { return 0x28; }
     };
-    typedef boost::shared_ptr<o32exe> o32exe_ptr;
+    typedef std::shared_ptr<o32exe> o32exe_ptr;
 
     // decompress fixup data as found in wince roms
     struct fixupdecompressor {
@@ -2552,10 +2547,10 @@ struct o32header {
     }
 };
 
-    boost::shared_ptr<mzheader> mz;
-    boost::shared_ptr<peheader> pe;
-    boost::shared_ptr<optheader> opt;
-    std::vector<boost::shared_ptr<o32header> > o32;
+    std::shared_ptr<mzheader> mz;
+    std::shared_ptr<peheader> pe;
+    std::shared_ptr<optheader> opt;
+    std::vector<std::shared_ptr<o32header> > o32;
     
     void load(ReadWriter_ptr r)
     {
@@ -2585,7 +2580,7 @@ struct o32header {
         ByteVector o32hdr(o32header::size()*pe->objcnt);
 
         for (unsigned i=0 ; i<pe->objcnt ; i++)
-            o32.push_back(boost::shared_ptr<o32header>(new o32header(&o32hdr[i*o32header::size()])));
+            o32.push_back(std::shared_ptr<o32header>(new o32header(&o32hdr[i*o32header::size()])));
     }
 
 };
@@ -2595,7 +2590,7 @@ public:
     virtual ~filetypefilter() { }
     virtual bool match(ReadWriter_ptr file)= 0;
 };
-typedef boost::shared_ptr<filetypefilter> filetypefilter_ptr;
+typedef std::shared_ptr<filetypefilter> filetypefilter_ptr;
 
 class FileContainer {
 public:
@@ -2610,10 +2605,10 @@ public:
     virtual void listfiles()= 0;
     virtual void dirhexdump()= 0;
 
-    typedef boost::function<void(const std::string& romname)> namefn;
+    typedef std::function<void(const std::string& romname)> namefn;
     virtual void filename_enumerator(namefn fn)= 0;
 };
-typedef boost::shared_ptr<FileContainer> FileContainer_ptr;
+typedef std::shared_ptr<FileContainer> FileContainer_ptr;
 
 class ImgfsFile : public FileContainer {
     ReadWriter_ptr _rd;
@@ -3203,7 +3198,7 @@ public:
         uint32_t nextsection() const { return _nextsection; }
         nameinfo &ni() { return _name; }
     };
-    typedef boost::shared_ptr<SectionEntry> SectionEntry_ptr;
+    typedef std::shared_ptr<SectionEntry> SectionEntry_ptr;
 
 
 
@@ -3406,7 +3401,7 @@ public:
         }
         nameinfo &ni() { return _name; }
     };
-    typedef boost::shared_ptr<FileEntry> FileEntry_ptr;
+    typedef std::shared_ptr<FileEntry> FileEntry_ptr;
 
     struct imgfsheader {
         imgfsheader(ReadWriter_ptr rd)
@@ -3598,7 +3593,7 @@ public:
         }
         FileEntry_ptr dstfile(new FileEntry(romname));
 
-        FileReader_ptr srcfile= boost::dynamic_pointer_cast<FileReader>(r);
+        std::shared_ptr<FileReader> srcfile= std::dynamic_pointer_cast<FileReader>(r);
         if (srcfile) {
             try {
             dstfile->setunixtime(srcfile->getunixtime());
@@ -3709,7 +3704,7 @@ public:
 
         srcfile->tostream(*this, w);
 
-        FileReader_ptr dstfile= boost::dynamic_pointer_cast<FileReader>(w);
+        std::shared_ptr<FileReader> dstfile= std::dynamic_pointer_cast<FileReader>(w);
         if (dstfile) {
             try {
             dstfile->setunixtime(srcfile->getunixtime());
@@ -4042,7 +4037,7 @@ public:
             printf("imgfs: cputype=%04x\n", type);
     }
 };
-typedef boost::shared_ptr<ImgfsFile> ImgfsFile_ptr;
+typedef std::shared_ptr<ImgfsFile> ImgfsFile_ptr;
 
 class XipFile : public FileContainer {
 
@@ -4242,9 +4237,9 @@ class XipFile : public FileContainer {
         uint32_t _rvaname;
         uint32_t _size;
     };
-    typedef boost::shared_ptr<XipEntry> XipEntry_ptr;
+    typedef std::shared_ptr<XipEntry> XipEntry_ptr;
     class TocEntry : public XipEntry {
-        boost::shared_ptr<exe_reconstructor> _exe;
+        std::shared_ptr<exe_reconstructor> _exe;
     public:
         TocEntry(uint64_t pos, const uint8_t *pdata)
             : XipEntry(pos)
@@ -4624,7 +4619,7 @@ public:
             printf("WARNING: missing nk.exe - needed to update romhdr ptr\n");
             return;
         }
-        auto nk= boost::dynamic_pointer_cast<TocEntry>(i->second);
+        auto nk= std::dynamic_pointer_cast<TocEntry>(i->second);
         uint32_t rvaptr= 0;
         nk->section_enumerator(*this, [oldromhdr, &rvaptr](uint32_t rva, const uint8_t *p, uint32_t size)
                 {
@@ -4683,7 +4678,7 @@ public:
             printf("duplicate name in xip: %s", romname.c_str());
             return;
         }
-        FileReader_ptr rfile= boost::dynamic_pointer_cast<FileReader>(r);
+        std::shared_ptr<FileReader> rfile= std::dynamic_pointer_cast<FileReader>(r);
         if (rfile) {
             try {
             dstfile->setunixtime(rfile->getunixtime());
@@ -4755,7 +4750,7 @@ public:
 
         srcfile->tostream(*this, w);
 
-        FileReader_ptr dstfile= boost::dynamic_pointer_cast<FileReader>(w);
+        std::shared_ptr<FileReader> dstfile= std::dynamic_pointer_cast<FileReader>(w);
         if (dstfile) {
             try {
             dstfile->setunixtime(srcfile->getunixtime());
@@ -4870,7 +4865,7 @@ public:
     rom34_convert XipFile::_rom34;
 #endif
 
-typedef boost::shared_ptr<XipFile> XipFile_ptr;
+typedef std::shared_ptr<XipFile> XipFile_ptr;
 
 class CompressedXipReader : public ReadWriter {
     // +00: 00970178
@@ -4903,7 +4898,7 @@ class CompressedXipReader : public ReadWriter {
     ByteVector _cache;
     uint32_t _cachepos; // decompressed offset for contents of _cache
 
-    MemoryReader_ptr _memrd;
+    std::shared_ptr<MemoryReader> _memrd;
 public:
     static bool isCompressedXip(ReadWriter_ptr rd, uint64_t ofs)
     {
@@ -5049,7 +5044,7 @@ public:
     }
     void loadmemrd()
     {
-        MemoryReader_ptr memrd(new ByteVectorReader());
+        std::shared_ptr<MemoryReader> memrd(new ByteVectorReader());
         uint64_t savedpos= _pos;
 
         setpos(0);
@@ -5248,7 +5243,7 @@ struct action {
     virtual ~action() { }
     virtual void perform(filesystemcollection& fslist, readercollection& rdlist)= 0;
 };
-typedef boost::shared_ptr<action> action_ptr;
+typedef std::shared_ptr<action> action_ptr;
 
 struct print_info : action {
     virtual ~print_info() { }
@@ -6354,7 +6349,7 @@ int main(int argc, char**argv)
 
     FileContainer_ptr imgfs= fslist.getbyname("imgfs");
     if (xip23 && imgfs) {
-        boost::dynamic_pointer_cast<ImgfsFile>(imgfs)->setcputype( boost::dynamic_pointer_cast<XipFile>(xip23)->cputype() );
+        std::dynamic_pointer_cast<ImgfsFile>(imgfs)->setcputype( std::dynamic_pointer_cast<XipFile>(xip23)->cputype() );
     }
 
     //////////////////////////////////////////////////////////////////////////////
