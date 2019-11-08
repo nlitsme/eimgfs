@@ -1,13 +1,8 @@
 MYPRJ=.
 
 
-LDFLAGS=/Zi
-CFLAGS=/Zi -Wall -D_NO_RAPI /EHsc /D_WIN32_WINNT_WIN10_TH2=1 -DNOMINMAX -D_NO_WINDOWS
-boost=c:/local/boost
-CFLAGS+=-I $(boost)
-# vs2015: 14.0
-# vs2017: 14.1
-LDFLAGS=/link /libpath:$(boost)/lib32-msvc-14.0 /machine:x86
+LDFLAGS+=/Zi /link /machine:x86
+CFLAGS+=/Zi -Wall -D_NO_RAPI /EHsc /D_WIN32_WINNT_WIN10_TH2=1 -DNOMINMAX -D_NO_WINDOWS
 
 itslib=$(MYPRJ)/itslib
 CFLAGS+=-I $(itslib)/include
@@ -38,4 +33,4 @@ eimgfs.exe: eimgfs.obj stringutils.obj debug.obj dllloader.obj
 	$(CXX) -c /Fo:$@ $^ $(CFLAGS)
 
 clean:
-	$(RM) eimgfs $(wildcard *.obj)
+	$(RM) eimgfs.exe $(wildcard *.obj)

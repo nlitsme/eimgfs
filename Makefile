@@ -14,6 +14,8 @@ CFLAGS+=-I $(dllload)
 openssl=/usr/local/opt/openssl
 CFLAGS+=-I $(openssl)/include
 
+CFLAGS+=-I/usr/local/include
+
 PLATFORM := $(shell uname -s)
 ifeq ($(PLATFORM),Linux)
 LDFLAGS+=-lcrypto
