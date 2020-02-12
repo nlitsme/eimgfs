@@ -19,6 +19,7 @@ RUN make
 FROM base as run
 
 COPY --from=build /app/eimgfs /app/eimgfs
+COPY ./dlls /app
 
 RUN chmod a+x /app/eimgfs
 
