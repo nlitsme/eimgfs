@@ -101,6 +101,14 @@ Make sure the dlls from the `dlls` directory are somewhere in the search path. T
 
 You can build `eimgfs` with OSX SDK up to version 10.13, version 10.14 no longer includes the 32 bit libraries needed.
 
+Docker is supported. Multistage building is used. Stage `run` should be used for actual executing the application. Entrypoint is configured as well.
+
+```
+docker build --target run .
+docker run -v /home/user/images:/app/data --rm -ti ef7b7abd7b4d -fs xip -fileinfo /app/data/FILENAME
+```
+
+
 author
 ======
 
