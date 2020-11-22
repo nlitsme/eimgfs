@@ -108,6 +108,7 @@ docker build --target run .
 docker run -v /home/user/images:/app/data --rm -ti ef7b7abd7b4d -fs xip -fileinfo /app/data/FILENAME
 ```
 
+On linux, you may need to install g++-multilib and 32bit binaries for openssl.
 
 author
 ======
