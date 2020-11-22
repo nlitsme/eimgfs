@@ -1,8 +1,12 @@
 MYPRJ=.
 
+# pass  'M32=1'  on the make commandline for the 32-bit build with decompression support.
 
-LDFLAGS=-g -m32
-CFLAGS=-g -m32 -Wall -std=c++1z -D_NO_RAPI
+LDFLAGS=-g $(if $(M32),-m32)
+CFLAGS=-g $(if $(M32),-m32) -Wall -std=c++1z -D_NO_RAPI
+
+# osx10.15 no longer supports 32 bit code -> can't use dll's anymore.
+CFLAGS+=$(if $(M32),,-D_NO_COMPRESS)
 CFLAGS+=$(if $(D),-O0,-O3)
 
 itslib=$(MYPRJ)/itslib
@@ -11,27 +15,19 @@ CFLAGS+=-I $(itslib)/include
 dllload=$(MYPRJ)/dllloader
 CFLAGS+=-I $(dllload)
 
+# the macos homebrew openssl dir:
 openssl=/usr/local/opt/openssl
+
 CFLAGS+=-I $(openssl)/include
+LDFLAGS+=-L$(openssl)/lib -lcrypto
 
 CFLAGS+=-I/usr/local/include
 
 PLATFORM := $(shell uname -s)
-ifeq ($(PLATFORM),Linux)
-LDFLAGS+=-lcrypto
-else
-# note: make sure this points to a i386 / 32 bit version of libcrypto.dylib
-#       *homebrew* no longer ships with 32 bit binaries. There is however
-#       still a 32 bit libcrypto in /usr/lib ... not sure for how long,
-#       apple may remove this any time. When that happens, you should probably
-#       build your own 32 bit openssl library.
-LDFLAGS+=/usr/lib/libcrypto.dylib
-endif
-
 computil=$(MYPRJ)/CompressUtils
 CFLAGS+=-I $(computil)
 
-eimgfs: eimgfs.o stringutils.o debug.o dllloader.o
+eimgfs: eimgfs.o stringutils.o debug.o $(if $(M32),dllloader.o)
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 %.o: %.cpp
