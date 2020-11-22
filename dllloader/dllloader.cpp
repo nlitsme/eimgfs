@@ -815,7 +815,7 @@ HMODULE MyLoadLibrary(const char*dllname)
     catch(...)
     {
         MySetLastError(ERROR_MOD_NOT_FOUND);
-        return NULL;
+        return reinterpret_cast<HMODULE>(nullptr);
     }
 }
 #ifdef _WIN32_WCE
