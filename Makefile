@@ -15,8 +15,11 @@ CFLAGS+=-I $(itslib)/include
 dllload=$(MYPRJ)/dllloader
 CFLAGS+=-I $(dllload)
 
-# the macos homebrew openssl dir:
-openssl=/usr/local/opt/openssl
+# find a suitable openssl dir.
+sslv=$(firstword $(wildcard $(addsuffix /include/openssl/opensslv.h,/usr/local /opt/local $(wildcard /usr/local/opt/openssl*) /usr)))
+dirname=$(dir $(patsubst %/,%,$1))
+openssl=$(call dirname,$(call dirname,$(call dirname,$(sslv))))
+
 
 CFLAGS+=-I $(openssl)/include
 LDFLAGS+=-L$(openssl)/lib -lcrypto
