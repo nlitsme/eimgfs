@@ -12,7 +12,7 @@ CFLAGS+=-I $(dllload)
 
 openssl=c:/local/openssl
 CFLAGS+=-I $(openssl)/include
-LDFLAGS+=$(openssl)/lib/libeay32.lib
+LDFLAGS+=$(openssl)/lib/libcrypto.lib
 
 computil=$(MYPRJ)/CompressUtils
 CFLAGS+=-I $(computil)
