@@ -10,9 +10,11 @@ CFLAGS+=-I $(itslib)/include
 dllload=$(MYPRJ)/dllloader
 CFLAGS+=-I $(dllload)
 
-openssl=c:/local/openssl
+openssl=c:/local/openssl-Win32
 CFLAGS+=-I $(openssl)/include
 LDFLAGS+=$(openssl)/lib/libcrypto.lib
+
+CFLAGS+=-I c:/local/boost_1_74_0
 
 computil=$(MYPRJ)/CompressUtils
 CFLAGS+=-I $(computil)
