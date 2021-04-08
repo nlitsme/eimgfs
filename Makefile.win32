@@ -3,6 +3,7 @@ MYPRJ=.
 
 LDFLAGS+=/Zi /link /machine:x86
 CFLAGS+=/Zi -Wall -D_NO_RAPI /EHsc /D_WIN32_WINNT_WIN10_TH2=1 -DNOMINMAX -D_NO_WINDOWS
+CFLAGS+=/utf-8
 
 itslib=$(MYPRJ)/itslib
 CFLAGS+=-I $(itslib)/include
