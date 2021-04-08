@@ -5897,7 +5897,6 @@ filetypefilter_ptr makefilter(const std::string& filter)
 
 int main(int argc, char**argv)
 {
-    DebugStdOut();
     try {
 #ifdef _NO_COMPRESS
     printf("(de)compression not supported in this build\n");
