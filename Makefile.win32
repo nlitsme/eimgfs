@@ -1,9 +1,9 @@
 MYPRJ=.
 
 
-LDFLAGS+=/Zi /link /machine:x86
-CFLAGS+=/Zi -Wall -D_NO_RAPI /EHsc /D_WIN32_WINNT_WIN10_TH2=1 -DNOMINMAX -D_NO_WINDOWS
-CFLAGS+=/utf-8
+LDFLAGS+=-Zi -link -machine:x86
+CFLAGS+=-Zi -Wall -D_NO_RAPI -EHsc -D_WIN32_WINNT_WIN10_TH2=1 -DNOMINMAX -D_NO_WINDOWS
+CFLAGS+=-utf-8
 
 itslib=$(MYPRJ)/itslib
 CFLAGS+=-I $(itslib)/include
@@ -15,7 +15,8 @@ openssl=c:/local/openssl-Win32
 CFLAGS+=-I $(openssl)/include
 LDFLAGS+=$(openssl)/lib/libcrypto.lib
 
-CFLAGS+=-I c:/local/boost_1_74_0
+CFLAGS+=-I c:/local/boost_1_76_0
+LDFLAGS+=-libpath:c:/local/boost_1_76_0/lib32-msvc-14.2/
 
 computil=$(MYPRJ)/CompressUtils
 CFLAGS+=-I $(computil)
@@ -24,16 +25,16 @@ CXX=CL.exe
 LINK=LINK.exe
 
 eimgfs.exe: eimgfs.obj stringutils.obj debug.obj dllloader.obj
-	$(CXX) /Fe:$@ $^ $(LDFLAGS)
+	$(CXX) -Fe:$@ $^ $(LDFLAGS)
 
 %.obj: %.cpp
-	$(CXX) -c /Fo:$@ $^ $(CFLAGS)
+	$(CXX) -c -Fo:$@ $^ $(CFLAGS)
 
 %.obj: $(itslib)/src/%.cpp
-	$(CXX) -c /Fo:$@ $^ $(CFLAGS)
+	$(CXX) -c -Fo:$@ $^ $(CFLAGS)
 
 %.obj: $(dllload)/%.cpp
-	$(CXX) -c /Fo:$@ $^ $(CFLAGS)
+	$(CXX) -c -Fo:$@ $^ $(CFLAGS)
 
 clean:
 	$(RM) eimgfs.exe $(wildcard *.obj)
