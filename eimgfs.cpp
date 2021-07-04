@@ -141,7 +141,7 @@ uint32_t roundsize(uint32_t x, uint32_t round)
 //
 
 
-struct caseinsensitive : std::binary_function<std::string,std::string,bool> {
+struct caseinsensitive {
     bool operator() (const std::string& lhs, const std::string& rhs) const
     {
         return stringicompare(lhs, rhs)<0;
