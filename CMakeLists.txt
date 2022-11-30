@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(eimgfs)
 set(CMAKE_CXX_STANDARD 17)
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake_find")
 
 option(OPT_M32  "To build the 32-bit version."  OFF)
 
@@ -47,9 +47,7 @@ else()
 endif()
 
 
-add_library(itslib STATIC itslib/src/stringutils.cpp)
-target_include_directories(itslib PUBLIC itslib/include)
-target_compile_definitions(itslib PUBLIC _UNIX _NO_RAPI _NO_WINDOWS)
+find_package(itslib REQUIRED)
 
 if (OPT_M32)
     add_library(dllloader STATIC dllloader/dllloader.cpp) 
@@ -64,7 +62,7 @@ if (OPT_M32)
 endif()
 
 find_package(OpenSSL REQUIRED)
-find_package(Boost REQUIRED COMPONENTS date_time)
+find_package(Boost REQUIRED date_time)
 
 add_executable(eimgfs eimgfs.cpp)
 target_link_libraries(eimgfs  itslib)
@@ -73,3 +71,5 @@ if (OPT_M32)
 endif()
 target_link_libraries(eimgfs OpenSSL::Crypto)
 target_link_libraries(eimgfs Boost::headers Boost::date_time)
+target_link_directories(eimgfs PUBLIC ${Boost_LIBRARY_DIRS})
+
