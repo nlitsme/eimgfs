@@ -1110,6 +1110,71 @@ class MsFlash50 {
 };
 
 
+template<typename PTR>
+size_t vectorread32le(PTR rd, DwordVector& v, size_t n)
+{
+    v.resize(n);
+
+    size_t nr= rd->read((uint8_t*)&v[0], n*sizeof(uint32_t));
+    if (nr%sizeof(uint32_t))
+        throw "read partial uint32_t";
+    v.resize(nr/sizeof(uint32_t));
+#if __BYTE_ORDER == __BIG_ENDIAN
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    std::for_each(v.begin(), v.end(), [](uint32_t& x) { x= swab32(x);});
+#else
+    throw "need c++0x";
+#endif
+#endif
+    return v.size();
+}
+template<typename PTR>
+size_t readstr(PTR rd, std::string& v, size_t n)
+{
+    v.resize(n);
+    size_t nr= rd->read((uint8_t*)&v[0], n);
+    v.resize(nr);
+    v.resize(stringlength(&v[0]));
+    return v.size();
+}
+template<typename PTR>
+std::string readstr(PTR rd)
+{
+    std::string str;
+    while(true)
+    {
+        str.resize(str.size()+16);
+        size_t n= rd->read((uint8_t*)&str[str.size()-16], 16);
+        str.resize(str.size()-16+n);
+        if (n==0)
+            return str;
+        size_t i0= str.find(char(0), str.size()-n);
+        if (i0!=str.npos)
+        {
+            str.resize(i0);
+            return str;
+        }
+    }
+}
+template<typename PTR>
+size_t readutf16le(PTR rd, std::Wstring& v, size_t n)
+{
+    v.resize(n);
+    size_t nr= rd->read((uint8_t*)&v[0], n*sizeof(uint16_t));
+    if (nr%sizeof(uint16_t))
+        throw "read partial uint16_t";
+    v.resize(nr/sizeof(uint16_t));
+    v.resize(stringlength(&v[0]));
+#if __BYTE_ORDER == __BIG_ENDIAN
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    std::for_each(v.begin(), v.end(), [](uint16_t& x) { x= swab16(x);});
+#else
+    throw "need c++0x";
+#endif
+#endif
+
+    return v.size();
+}
 class HtcImageFile {
     ReadWriter_ptr _r;
 
@@ -1153,22 +1218,22 @@ public:
         _r->setpos(0);
 
         DwordVector magic(8);
-        _r->vectorread32le(magic, 8);
+        vectorread32le(_r, magic, 8);
         std::string magicstr;
         magicstr.resize(8);
         std::copy(magic.begin(), magic.end(), magicstr.begin());
         if (magicstr!="HTCIMAGE")
             throw "missing HTCIMAGE signature";
 
-        _r->readstr(_devname, 32);
+        readstr(_r, _devname, 32);
 
-        _r->vectorread32le(_typelist, 32);
-        _r->vectorread32le(_ofslist, 32);
-        _r->vectorread32le(_sizelist, 32);
+        vectorread32le(_r, _typelist, 32);
+        vectorread32le(_r, _ofslist, 32);
+        vectorread32le(_r, _sizelist, 32);
 
-        _r->readstr(_cid, 32);
-        _r->readstr(_version, 16);
-        _r->readstr(_language, 16);
+        readstr(_r, _cid, 32);
+        readstr(_r, _version, 16);
+        readstr(_r, _language, 16);
         
         if (g_verbose) {
             printf("HTCIMAGE file\n");
@@ -1320,7 +1385,7 @@ public:
 
         _r->setpos(0);
         std::string magic;
-        _r->readstr(magic, 7);
+        readstr(_r, magic, 7);
 
         _r->read(&_guid[0], _guid.size());
 
@@ -3095,7 +3160,7 @@ public:
                     imgfs.rd()->setpos(_ptr);
 
                     std::Wstring wstr;
-                    imgfs.rd()->readutf16le(wstr, _length);
+                    readutf16le(imgfs.rd(), wstr, _length);
 
                     _name= ToString(wstr);
                 }
@@ -4186,7 +4251,7 @@ class XipFile : public FileContainer {
             if (_rvaname==0)
                 return "";
             ReadWriter_ptr r= xip.getrvareader(_rvaname, 260);
-            return r->readstr();
+            return readstr(r);
         }
         void listentry(XipFile& xip)
         {
