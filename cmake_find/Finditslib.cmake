@@ -1,3 +1,6 @@
+if (TARGET itslib)
+    return()
+endif()
 find_path(ITSLIB_PATH NAMES include/itslib/stringutils.h PATHS symlinks/itslib)
 if(ITSLIB_PATH STREQUAL "ITSLIB_PATH-NOTFOUND")
     include(FetchContent)
