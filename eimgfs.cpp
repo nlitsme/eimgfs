@@ -7,12 +7,7 @@
 #include <algorithm>  // max_element
 #include <numeric>    // accumulate
 #include <sys/stat.h>
-#include <time.h>
-#ifdef _WIN32
-#include <sys/utime.h>
-#else
-#include <sys/time.h>
-#endif
+#include <ctime>
 
 #include "err/posix.h"
 #include "stringutils.h"
