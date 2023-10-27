@@ -3,7 +3,7 @@ if (TARGET openssl_ssl)
 endif()
 if (DARWIN)
     find_path(OPENSSL_INCLUDE_PATH NAMES openssl/sha.h
-        PATHS $ENV{OPENSSL_ROOT_DIR}/include /usr/include /usr/local/include /usr/local/opt/openssl/include)
+        PATHS $ENV{OPENSSL_ROOT_DIR}/include /usr/local/opt/openssl/include /usr/include /usr/local/include)
     find_library(OPENSSL_CRYPTO_LIBRARY NAMES crypto 
         PATHS $ENV{OPENSSL_ROOT_DIR}/lib /usr/local/opt/openssl/lib /usr/lib /usr/local/lib)
     find_library(OPENSSL_SSL_LIBRARY NAMES ssl 
@@ -26,7 +26,7 @@ else()
     endif()
 
     find_path(OPENSSL_INCLUDE_PATH NAMES openssl/sha.h
-        PATHS /usr/include /usr/local/include /usr/local/opt/openssl/include)
+        PATHS /usr/local/opt/openssl/include /usr/include /usr/local/include)
     find_library(OPENSSL_CRYPTO_LIBRARY NAMES crypto 
         PATHS /usr/local/opt/openssl/lib /usr/lib /usr/local/lib)
     find_library(OPENSSL_SSL_LIBRARY NAMES ssl 
