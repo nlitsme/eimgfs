@@ -10,7 +10,7 @@ WORKDIR /app
 
 FROM base as build
 
-RUN apt install -y --no-install-recommends gcc g++ make gcc-multilib g++-multilib libboost-container-dev
+RUN apt install -y --no-install-recommends gcc g++ make gcc-multilib g++-multilib libboost-container-dev cmake
 
 COPY . /app
 
@@ -24,4 +24,3 @@ COPY ./dlls /app
 RUN chmod a+x /app/eimgfs
 
 ENTRYPOINT ["/app/eimgfs"]
-
