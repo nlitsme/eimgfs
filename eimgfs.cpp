@@ -2296,6 +2296,10 @@ public:
                 catch(const char*msg) {
                     printf("ERROR: %s\n", msg);
                 }
+                catch(std::exception& e)
+                {
+                    printf("E: %s\n", e.what());
+                }
                 catch(...)
                 {
                     printf("ERROR in expandfixupdata\n");
