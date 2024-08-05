@@ -22,6 +22,7 @@ elseif(WIN32)
 else()
     find_package(OpenSSL)
     if (OpenSSL_FOUND)
+        add_definitions(-DOPENSSL_SUPPRESS_DEPRECATED)
         return()
     endif()
 
