@@ -3,9 +3,11 @@ CMAKEARGS+=$(if $(COV),-DOPT_COV=1)
 CMAKEARGS+=$(if $(PROF),-DOPT_PROF=1)
 CMAKEARGS+=$(if $(LIBCXX),-DOPT_LIBCXX=1)
 CMAKEARGS+=$(if $(M32),-A Win32 -DOPT_M32=1)
+CMAKE=cmake
+JOBSFLAG=$(filter -j%,$(MAKEFLAGS))
 cmake:
-	cmake -B build . $(CMAKEARGS)
-	$(MAKE) -C build $(if $(V),VERBOSE=1)
+	$(CMAKE) -B build . $(CMAKEARGS)
+	$(MAKE) -C build  $(JOBSFLAG) $(if $(V),VERBOSE=1)
 
 clean:
 	$(RM) eimgfs $(wildcard *.o)
